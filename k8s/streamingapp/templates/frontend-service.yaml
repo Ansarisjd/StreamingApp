@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "streamingapp.fullname" . }}-frontend
+  labels:
+    app: {{ include "streamingapp.name" . }}
+    component: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ include "streamingapp.name" . }}
+    component: frontend
+  ports:
+    - name: http
+      port: {{ .Values.service.frontend.port }}
+      targetPort: {{ .Values.service.frontend.targetPort }}
+      protocol: TCP

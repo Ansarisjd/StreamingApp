@@ -1,0 +1,54 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "streamingapp.fullname" . }}
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - http:
+        paths:
+          - path: /api/auth
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "streamingapp.fullname" . }}-auth
+                port:
+                  number: 3001
+
+          - path: /api/streaming
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "streamingapp.fullname" . }}-streaming
+                port:
+                  number: 3002
+
+          - path: /api/admin
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "streamingapp.fullname" . }}-admin
+                port:
+                  number: 3003
+
+          - path: /api/chat
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "streamingapp.fullname" . }}-chat
+                port:
+                  number: 3004
+
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "streamingapp.fullname" . }}-frontend
+                port:
+                  number: 80
+{{- end }}

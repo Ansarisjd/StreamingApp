@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "streamingapp.fullname" . }}-chat
+  labels:
+    app: {{ include "streamingapp.name" . }}
+    component: chat
+spec:
+  replicas: {{ .Values.replicaCount.chat }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: {{ include "streamingapp.name" . }}
+      component: chat
+  template:
+    metadata:
+      labels:
+        app: {{ include "streamingapp.name" . }}
+        component: chat
+    spec:
+      containers:
+        - name: chat
+          image: "{{ .Values.images.chat.repository }}:{{ .Values.images.chat.tag }}"
+          imagePullPolicy: {{ .Values.images.chat.pullPolicy }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.chat.targetPort }}
+              protocol: TCP
+
+          env:
+            - name: PORT
+              value: "3004"
+
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "streamingapp.fullname" . }}-secret
+                  key: MONGO_URI
+
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "streamingapp.fullname" . }}-secret
+                  key: JWT_SECRET
+
+            - name: CLIENT_URLS
+              value: {{ .Values.clientUrls | quote }}
+
+          resources:
+            {{- toYaml .Values.resources.chat | nindent 12 }}
+
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3

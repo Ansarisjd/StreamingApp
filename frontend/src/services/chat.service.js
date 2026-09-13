@@ -47,6 +47,7 @@ class ChatService {
     this.token = resolvedToken;
     this.socket = io(CHAT_SOCKET_URL, {
       transports: ['websocket'],
+    path: '/api/chat/socket.io',
       autoConnect: false,
       auth: { token: resolvedToken },
     });

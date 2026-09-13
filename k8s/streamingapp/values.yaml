@@ -1,0 +1,113 @@
+replicaCount:
+  auth: 1
+  streaming: 1
+  admin: 1
+  chat: 1
+  frontend: 1
+
+images:
+  auth:
+    repository: 251523190381.dkr.ecr.ap-south-1.amazonaws.com/streamingapp-auth
+    tag: "1.0.1"
+    pullPolicy: IfNotPresent
+
+  streaming:
+    repository: 251523190381.dkr.ecr.ap-south-1.amazonaws.com/streamingapp-streaming
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+
+  admin:
+    repository: 251523190381.dkr.ecr.ap-south-1.amazonaws.com/streamingapp-admin
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+
+  chat:
+    repository: 251523190381.dkr.ecr.ap-south-1.amazonaws.com/streamingapp-chat
+    tag: "1.0.1"
+    pullPolicy: IfNotPresent
+
+  frontend:
+    repository: 251523190381.dkr.ecr.ap-south-1.amazonaws.com/streamingapp-frontend
+    tag: "1.0.5"
+    pullPolicy: IfNotPresent
+
+service:
+  auth:
+    port: 3001
+    targetPort: 3001
+
+  streaming:
+    port: 3002
+    targetPort: 3002
+
+  admin:
+    port: 3003
+    targetPort: 3003
+
+  chat:
+    port: 3004
+    targetPort: 3004
+
+  frontend:
+    port: 80
+    targetPort: 80
+
+resources:
+  auth:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  streaming:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  admin:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  chat:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  frontend:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+clientUrls: "http://k8s-streamin-streamin-cb98f1ed96-779533601.us-east-1.elb.amazonaws.com"
+
+ingress:
+  enabled: true
+  className: alb
+  host: ""
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+
+secrets:
+  mongoUri: ""
+  jwtSecret: ""
+  awsAccessKeyId: ""
+  awsSecretAccessKey: ""

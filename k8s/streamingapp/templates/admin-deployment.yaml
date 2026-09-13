@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "streamingapp.fullname" . }}-admin
+  labels:
+    app: {{ include "streamingapp.name" . }}
+    component: admin
+spec:
+  replicas: {{ .Values.replicaCount.admin }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: {{ include "streamingapp.name" . }}
+      component: admin
+  template:
+    metadata:
+      labels:
+        app: {{ include "streamingapp.name" . }}
+        component: admin
+    spec:
+      containers:
+        - name: admin
+          image: "{{ .Values.images.admin.repository }}:{{ .Values.images.admin.tag }}"
+          imagePullPolicy: {{ .Values.images.admin.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.admin.targetPort }}
+              protocol: TCP
+
+          env:
+            - name: PORT
+              value: "3003"
+
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "streamingapp.fullname" . }}-secret
+                  key: MONGO_URI
+
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "streamingapp.fullname" . }}-secret
+                  key: JWT_SECRET
+
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "streamingapp.fullname" . }}-secret
+                  key: AWS_ACCESS_KEY_ID
+
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "streamingapp.fullname" . }}-secret
+                  key: AWS_SECRET_ACCESS_KEY
+
+            - name: CLIENT_URLS
+              value: {{ .Values.clientUrls | quote }}
+
+            - name: AWS_REGION
+              value: "ap-south-1"
+
+          resources:
+            {{- toYaml .Values.resources.admin | nindent 12 }}
+
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3

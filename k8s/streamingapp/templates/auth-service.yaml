@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "streamingapp.fullname" . }}-auth
+  labels:
+    app: {{ include "streamingapp.name" . }}
+    component: auth
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ include "streamingapp.name" . }}
+    component: auth
+  ports:
+    - name: http
+      port: {{ .Values.service.auth.port }}
+      targetPort: {{ .Values.service.auth.targetPort }}
+      protocol: TCP

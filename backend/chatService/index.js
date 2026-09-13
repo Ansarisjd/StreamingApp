@@ -16,6 +16,7 @@ const allowedOrigins = (process.env.CLIENT_URLS || process.env.CLIENT_URL || 'ht
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
+  path: '/api/chat/socket.io',
   cors: {
     origin: (origin, callback) => {
       if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {

@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "streamingapp.fullname" . }}-frontend
+  labels:
+    app: {{ include "streamingapp.name" . }}
+    component: frontend
+spec:
+  replicas: {{ .Values.replicaCount.frontend }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: {{ include "streamingapp.name" . }}
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: {{ include "streamingapp.name" . }}
+        component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.images.frontend.repository }}:{{ .Values.images.frontend.tag }}"
+          imagePullPolicy: {{ .Values.images.frontend.pullPolicy }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.frontend.targetPort }}
+              protocol: TCP
+
+          resources:
+            {{- toYaml .Values.resources.frontend | nindent 12 }}
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
