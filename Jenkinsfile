@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+        disableConcurrentBuilds()
+    }
+
     environment {
         AWS_REGION = 'ap-south-1'
         AWS_ACCOUNT_ID = '251523190381'
@@ -29,7 +34,9 @@ pipeline {
                 ]) {
                     sh '''
                         aws ecr get-login-password --region ${AWS_REGION} |
-                        docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                        docker login \
+                          --username AWS \
+                          --password-stdin ${ECR_REGISTRY}
                     '''
                 }
             }
@@ -53,9 +60,10 @@ pipeline {
                     steps {
                         sh '''
                             docker build \
+                              -f ./backend/streamingService/Dockerfile \
                               -t ${ECR_REGISTRY}/${STREAMING_REPO}:${BUILD_NUMBER} \
                               -t ${ECR_REGISTRY}/${STREAMING_REPO}:latest \
-                              ./backend/streamingService
+                              ./backend
                         '''
                     }
                 }
@@ -64,9 +72,10 @@ pipeline {
                     steps {
                         sh '''
                             docker build \
+                              -f ./backend/adminService/Dockerfile \
                               -t ${ECR_REGISTRY}/${ADMIN_REPO}:${BUILD_NUMBER} \
                               -t ${ECR_REGISTRY}/${ADMIN_REPO}:latest \
-                              ./backend/adminService
+                              ./backend
                         '''
                     }
                 }
@@ -75,9 +84,10 @@ pipeline {
                     steps {
                         sh '''
                             docker build \
+                              -f ./backend/chatService/Dockerfile \
                               -t ${ECR_REGISTRY}/${CHAT_REPO}:${BUILD_NUMBER} \
                               -t ${ECR_REGISTRY}/${CHAT_REPO}:latest \
-                              ./backend/chatService
+                              ./backend
                         '''
                     }
                 }
@@ -153,6 +163,7 @@ pipeline {
     }
 
     post {
+
         success {
             echo 'All StreamingApp images built and pushed successfully to ECR.'
         }
